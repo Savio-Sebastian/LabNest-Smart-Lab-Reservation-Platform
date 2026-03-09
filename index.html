@@ -17,13 +17,21 @@
 
 <body>
 
+    <!-- App Header -->
+    <header class="main-header">
+        <div class="logo">OS Visual Lab</div>
+        <button id="theme-toggle" class="icon-button">
+            <span class="theme-icon">🌙</span> Theme
+        </button>
+    </header>
+
     <!-- Section 1: Hero Section -->
     <section class="hero-section" id="hero">
         <div class="hero-content">
             <h1 class="hero-title">Disk Scheduling Algorithms Visualizer</h1>
             <p class="hero-subtitle">Interactive visualization of FCFS, SSTF, SCAN, C-SCAN and LOOK disk scheduling
                 algorithms.</p>
-            <a href="#simulator" class="glow-button">Start Simulation</a>
+            <a href="#lab" class="glow-button">Enter Laboratory</a>
         </div>
 
         <!-- Rotating Hard Disk Platter Animation -->
@@ -118,99 +126,117 @@
             </div>
         </section>
 
-        <!-- Section 5: FCFS Explanation -->
-        <section class="explanation-section" id="fcfs-explanation">
-            <h2 class="section-title">FCFS Algorithm Explanation</h2>
-            <div class="glass-card">
-                <h3>Steps</h3>
-                <ol>
-                    <li>Requests arrive in a queue.</li>
-                    <li>The disk head services them in arrival order.</li>
-                    <li>The head moves sequentially between tracks.</li>
-                    <li>Total head movement is calculated by summing absolute differences.</li>
-                </ol>
-                <div class="example-box">
-                    <h4>Example Input</h4>
-                    <p><strong>Initial Head Position:</strong> 53</p>
-                    <p><strong>Requests:</strong> 98, 183, 37, 122, 14, 124, 65</p>
+        <!-- Section 5: OS Visual Lab -->
+        <section class="lab-section" id="lab">
+            <h2 class="section-title">Interactive OS Learning Lab</h2>
+
+            <div class="lab-layout">
+                <!-- Left Panel: Algorithm Controls -->
+                <div class="lab-sidebar glass-card">
+
+                    <h3>Select Algorithm</h3>
+                    <div class="algo-selector" id="algo-selector">
+                        <button class="algo-btn active" data-algo="FCFS">FCFS</button>
+                        <button class="algo-btn" data-algo="SSTF">SSTF</button>
+                        <button class="algo-btn" data-algo="SCAN">SCAN</button>
+                        <button class="algo-btn" data-algo="C-SCAN">C-SCAN</button>
+                        <button class="algo-btn" data-algo="LOOK">LOOK</button>
+                    </div>
+
+                    <div class="algo-logic-display" id="algo-logic-display">
+                        <h4 id="logic-title" style="color: var(--accent-1);">FCFS</h4>
+                        <p id="logic-desc">Processes disk requests in the order they arrive.</p>
+                    </div>
+
+                    <h3 style="margin-top: 1.5rem;">Parameters</h3>
+                    <div class="input-group">
+                        <label for="lab-head">Initial Head Position (0-199):</label>
+                        <input type="number" id="lab-head" min="0" max="199" value="53">
+                    </div>
+                    <div class="input-group">
+                        <label for="lab-requests">Track Requests (comma separated):</label>
+                        <input type="text" id="lab-requests" value="98,183,37,122,14,124,65">
+                    </div>
+                    <button id="btn-randomize" class="glow-button small-btn"
+                        style="width: 100%; padding: 0.8rem; font-size: 1rem; margin-bottom: 2rem;">Generate Random
+                        Requests</button>
+
+                    <h3>Simulation Controls</h3>
+                    <div class="playback-controls" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <button id="btn-play" class="control-btn play-btn glow-button" style="padding: 0.8rem;"
+                            title="Play">▶ Play</button>
+                        <button id="btn-pause" class="control-btn pause-btn glow-button"
+                            style="padding: 0.8rem; opacity: 0.5;" title="Pause" disabled>⏸ Pause</button>
+                        <button id="btn-next" class="control-btn next-btn glow-button"
+                            style="padding: 0.8rem; background: transparent; border: 1px solid var(--accent-1);"
+                            title="Next Step">⏭ Next</button>
+                        <button id="btn-reset" class="control-btn reset-btn glow-button"
+                            style="padding: 0.8rem; background: transparent; border: 1px solid var(--accent-2);"
+                            title="Reset">⏮ Reset</button>
+                    </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Section 6: FCFS Simulator -->
-        <section class="simulator-section" id="simulator">
-            <h2 class="section-title">FCFS Disk Scheduling Simulator</h2>
-            <div class="glass-card sim-form-card">
-                <form id="fcfs-form">
-                    <div class="input-group">
-                        <label for="fcfs-head">Initial Head Position (0-199):</label>
-                        <input type="number" id="fcfs-head" min="0" max="199" value="53" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="fcfs-requests">Track Request Sequence (comma separated):</label>
-                        <input type="text" id="fcfs-requests" value="98,183,37,122,14,124,65"
-                            pattern="^(\s*\d+\s*(,\s*\d+\s*)*)$" required>
-                    </div>
-                    <button type="submit" class="glow-button">Run FCFS Simulation</button>
-                </form>
-            </div>
-        </section>
+                <!-- Right Panel: Visualization Area -->
+                <div class="lab-main">
 
-        <!-- Wrapper for FCFS Results Container -->
-        <div id="fcfs-results" class="results-container hidden">
-            <!-- Section 7: Disk Movement Visualization -->
-            <section class="visualization-section">
-                <h3 class="section-title">Disk Movement Visualization</h3>
-                <div class="glass-card visualization-card">
-                    <div class="track-viz-container" id="fcfs-viz-container">
-                        <!-- Canvas and DOM overlays generated here -->
-                        <canvas id="fcfs-canvas" width="800" height="200"></canvas>
-                        <div class="axis-labels">
-                            <span>0</span>
-                            <span>199</span>
+                    <!-- 3D Rotating Disk Visualization -->
+                    <div class="glass-card viz-3d-card" style="margin-bottom: 2rem;">
+                        <h3 style="text-align: center; margin-bottom: 1rem; font-size: 1.5rem;">3D Disk Platter Preview
+                        </h3>
+                        <div class="disk-platter-3d-container"
+                            style="position: relative; height: 300px; display: flex; justify-content: center; align-items: center; overflow: hidden; perspective: 1000px;">
+                            <div class="disk-platter-3d" id="platter-3d">
+                                <div class="ring outer-ring"></div>
+                                <div class="ring middle-ring"></div>
+                                <div class="ring inner-ring"></div>
+                                <div class="spindle"></div>
+                                <div class="disk-head-arm" id="arm-3d"></div>
+                            </div>
                         </div>
                     </div>
-                    <p class="viz-explanation">Animation showing step-by-step head movement servicing requests in
-                        exactly the arrival order.</p>
-                </div>
-            </section>
 
-            <!-- Section 8: Track Servicing Order -->
-            <section class="order-section">
-                <div class="glass-card text-center">
-                    <h3>Servicing Order</h3>
-                    <div class="servicing-path" id="fcfs-order-display">
-                        <!-- e.g. 53 -> 98 -> 183 -> 37 ... -->
-                    </div>
-                    <p><small>FCFS services requests exactly in the order they appear in the queue.</small></p>
-                </div>
-            </section>
+                    <!-- 1D Horizontal Track Visualization -->
+                    <div class="glass-card visualization-card">
+                        <h3 style="text-align: center; margin-bottom: 1rem; font-size: 1.5rem;">Disk Track Visualization
+                        </h3>
+                        <div class="live-stats"
+                            style="display: flex; justify-content: space-around; font-size: 1.2rem; margin-bottom: 1rem;">
+                            <div class="stat-box">Current Head: <span id="stat-current"
+                                    style="color: var(--accent-1); font-weight: bold; font-size: 1.5rem;">53</span>
+                            </div>
+                            <div class="stat-box">Total Movement: <span id="stat-total"
+                                    style="color: var(--accent-2); font-weight: bold; font-size: 1.5rem;">0</span></div>
+                        </div>
 
-            <!-- Section 9: Head Movement Calculation -->
-            <section class="calculation-section">
-                <div class="grid-layout cols-2">
-                    <div class="glass-card table-card">
-                        <h3>Calculation Steps</h3>
-                        <table class="calc-table" id="fcfs-calc-table">
-                            <thead>
-                                <tr>
-                                    <th>Movement</th>
-                                    <th>Distance</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Generated rows -->
-                            </tbody>
-                        </table>
+                        <div class="track-viz-container" id="lab-viz-container">
+                            <canvas id="lab-canvas" width="800" height="200"></canvas>
+                            <div class="axis-labels">
+                                <span>0</span>
+                                <span>199</span>
+                            </div>
+                        </div>
+
+                        <div class="viz-legend"
+                            style="display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; font-size: 1rem;">
+                            <div class="legend-item"><span class="legend-color init-head"
+                                    style="color: var(--accent-2); font-size: 1.2rem;">●</span> Initial Head Position
+                            </div>
+                            <div class="legend-item"><span class="legend-color req-track"
+                                    style="color: #fff; font-size: 1.2rem;">○</span> Requested Track</div>
+                            <div class="legend-item"><span class="legend-color move-path"
+                                    style="color: var(--accent-1); font-size: 1.2rem; font-weight: bold;">→</span> Head
+                                Movement Path</div>
+                        </div>
+
+                        <div style="margin-top: 2rem; text-align: center;">
+                            <h4>Servicing Order</h4>
+                            <div class="servicing-path" id="lab-order-display" style="min-height: 3rem;">...</div>
+                        </div>
                     </div>
-                    <div class="glass-card total-card">
-                        <h3>Total Head Movement</h3>
-                        <div class="total-score" id="fcfs-total-score">0</div>
-                        <p>This represents the total distance traveled by the disk head to complete all requests.</p>
-                    </div>
+
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
 
         <!-- Section 10: Comparison Simulator -->
         <section class="comparison-section" id="comparison">
@@ -415,8 +441,32 @@
             </div>
         </section>
 
+        <!-- Section 12: Conclusion -->
+        <section class="conclusion-section" id="conclusion">
+            <h2 class="section-title">Conclusion</h2>
+            <div class="glass-card"
+                style="text-align: center; max-width: 800px; margin: 0 auto; font-size: 1.1rem; line-height: 1.8;">
+                <p>
+                    <strong>FCFS</strong> processes disk requests in arrival order but often causes large head movement.
+                    Algorithms such as <strong>SSTF, SCAN, C-SCAN, and LOOK</strong> optimize disk head movement by
+                    choosing
+                    requests based on proximity or direction. By interacting with the visualizations above, we can
+                    observe that
+                    optimizing scheduling drastically improves disk performance.
+                </p>
+            </div>
+        </section>
+
         <footer class="footer">
-            <p>Modern Interactive Operating Systems Learning Tool</p>
+            <div class="footer-content" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <h3 style="color: var(--text-color); margin-bottom: 0.5rem;">Disk Scheduling Algorithms Visualizer</h3>
+                <p>Developed by: <strong>Adarsh S</strong></p>
+                <p>Course: Operating Systems</p>
+                <p>Institution: Amal Jyothi College of Engineering</p>
+                <a href="https://github.com/ash007-web/os_fcfs" target="_blank"
+                    style="color: var(--accent-1); text-decoration: underline; margin-top: 1rem;">Source Code on
+                    GitHub</a>
+            </div>
         </footer>
     </div>
 

@@ -1,6 +1,6 @@
 /* ------------- CSS Reset & Variables ------------- */
 :root {
-    /* Color Palette */
+    /* Color Palette - Theme 1 (Default) */
     --bg-grad-start: #412653;
     --bg-grad-end: #3F567F;
     --accent-1: #D174D2;
@@ -21,6 +21,17 @@
 
     /* Transitions */
     --transition: all 0.3s ease-in-out;
+}
+
+[data-theme="tech"] {
+    /* Color Palette - Theme 2 (Tech) */
+    --bg-grad-start: #0F2027;
+    --bg-grad-end: #2C5364;
+    --accent-1: #00C9FF;
+    --accent-2: #92FE9D;
+    --card-bg: rgba(15, 32, 39, 0.6);
+    --card-border: rgba(0, 201, 255, 0.2);
+    --glow: 0 0 15px rgba(0, 201, 255, 0.5);
 }
 
 * {
@@ -590,8 +601,182 @@ canvas {
     transform: translateX(-50%);
 }
 
+/* ------------- App Header & Theme Toggle ------------- */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.logo {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--accent-1);
+    text-shadow: var(--glow);
+}
+
+.icon-button {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+.icon-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent-1);
+}
+
+/* ------------- Lab Layout (Two Panel) ------------- */
+.lab-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.lab-sidebar h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.algo-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.algo-btn {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 0.8rem;
+    color: var(--text-color);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: var(--transition);
+}
+
+.algo-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.algo-btn.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent-1);
+    box-shadow: inset 4px 0 0 var(--accent-1);
+}
+
+.algo-logic-display {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 2rem;
+    border-left: 2px solid var(--accent-1);
+}
+
+/* ------------- 3D Disk Platter ------------- */
+.disk-platter-3d {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    transform-style: preserve-3d;
+    transform: rotateX(60deg) rotateZ(0deg);
+    animation: rotate-3d-idle 15s linear infinite;
+}
+
+@keyframes rotate-3d-idle {
+    from {
+        transform: rotateX(60deg) rotateZ(0deg);
+    }
+
+    to {
+        transform: rotateX(60deg) rotateZ(360deg);
+    }
+}
+
+.disk-platter-3d .ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 4px solid var(--card-border);
+}
+
+.disk-platter-3d .outer-ring {
+    width: 100%;
+    height: 100%;
+    border-color: var(--accent-1);
+    box-shadow: 0 0 15px var(--accent-1);
+}
+
+.disk-platter-3d .middle-ring {
+    width: 70%;
+    height: 70%;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.disk-platter-3d .inner-ring {
+    width: 40%;
+    height: 40%;
+    border-color: var(--accent-2);
+    box-shadow: 0 0 10px var(--accent-2);
+}
+
+.disk-platter-3d .spindle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateZ(10px);
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #fff;
+}
+
+.disk-platter-3d .disk-head-arm {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    width: 45%;
+    height: 8px;
+    background: linear-gradient(90deg, #ccc, #fff);
+    transform-origin: left center;
+    transform: translateY(-50%) translateZ(15px) rotate(20deg);
+    border-radius: 4px;
+    box-shadow: 0 0 10px #fff;
+    transition: transform 0.5s ease-in-out;
+}
+
 /* ------------- Responsive Breakpoints ------------- */
 @media (max-width: 768px) {
+    .lab-layout {
+        grid-template-columns: 1fr;
+    }
+
     .hero-title {
         font-size: 2.5rem;
     }

@@ -162,60 +162,237 @@ function animateLineAndNode(ctx, startX, startY, endX, endY, nextLabel) {
 }
 
 
-// ------------- FCFS Simulator Setup -------------
-
-document.getElementById('fcfs-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const head = parseInt(document.getElementById('fcfs-head').value, 10);
-    const reqsStr = document.getElementById('fcfs-requests').value;
-    const reqs = parseRequests(reqsStr);
-
-    if (isNaN(head) || reqs.length === 0) return;
-
-    // Calculate
-    const { path, movement } = calculateMovementAndPath(head, reqs, 'FCFS');
-
-    // Unhide results
-    document.getElementById('fcfs-results').classList.remove('hidden');
-
-    // Viz (Animated)
-    const runBtn = document.querySelector('#fcfs-form button[type="submit"]');
-    runBtn.disabled = true; // Disable button while animating
-
-    // Clear the calc table before animating
-    const tbody = document.querySelector('#fcfs-calc-table tbody');
-    tbody.innerHTML = '';
-    document.getElementById('fcfs-total-score').textContent = "0";
-    document.getElementById('fcfs-order-display').textContent = "...";
-
-    // Smooth scroll down to results container immediately
-    document.getElementById('fcfs-results').scrollIntoView({ behavior: 'smooth' });
-
-    // Ensure section is visible for canvas to draw properly
-    setTimeout(async () => {
-        await drawGraphAnimated('fcfs-canvas', path);
-
-        // Populate Order Display after animation
-        document.getElementById('fcfs-order-display').textContent = path.join(' \u2192 ');
-
-        // Populate Calc Table after animation
-        for (let i = 0; i < path.length - 1; i++) {
-            const tr = document.createElement('tr');
-            const tdDesc = document.createElement('td');
-            tdDesc.textContent = `${path[i]} \u2192 ${path[i + 1]}`;
-            const tdDist = document.createElement('td');
-            tdDist.textContent = Math.abs(path[i] - path[i + 1]);
-            tr.appendChild(tdDesc);
-            tr.appendChild(tdDist);
-            tbody.appendChild(tr);
+// ------------- Theme Toggle -------------
+const themeToggle = document.getElementById('theme-toggle');
+let isDarkTechTheme = false;
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        isDarkTechTheme = !isDarkTechTheme;
+        if (isDarkTechTheme) {
+            document.body.setAttribute('data-theme', 'tech');
+            themeToggle.innerHTML = '<span class="theme-icon">☀️</span> Theme';
+        } else {
+            document.body.removeAttribute('data-theme');
+            themeToggle.innerHTML = '<span class="theme-icon">🌙</span> Theme';
         }
+    });
+}
 
-        // Total Score
-        document.getElementById('fcfs-total-score').textContent = movement;
-        runBtn.disabled = false;
-    }, 500);
+// ------------- Lab State & Controls -------------
+let currentAlgo = 'FCFS';
+let simPath = [];
+let simStep = 0;
+let simInterval = null;
+let animationSpeed = 800; // ms
+
+const algoBtns = document.querySelectorAll('.algo-btn');
+const logicTitle = document.getElementById('logic-title');
+const logicDesc = document.getElementById('logic-desc');
+const algoLogics = {
+    'FCFS': 'Processes disk requests in the order they arrive.',
+    'SSTF': 'Selects the request closest to the current head.',
+    'SCAN': 'Moves like an elevator servicing requests in one direction (towards 199), then reverses.',
+    'C-SCAN': 'Moves in one direction (towards 199), jumps back to 0, then continues.',
+    'LOOK': 'Similar to SCAN but stops at the last request instead of the edge.'
+};
+
+const headInput = document.getElementById('lab-head');
+const reqInput = document.getElementById('lab-requests');
+const statCurrent = document.getElementById('stat-current');
+const statTotal = document.getElementById('stat-total');
+const orderDisplay = document.getElementById('lab-order-display');
+const arm3d = document.getElementById('arm-3d');
+
+// Algorithm Selection
+algoBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        algoBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentAlgo = btn.getAttribute('data-algo');
+        logicTitle.textContent = currentAlgo;
+        logicDesc.textContent = algoLogics[currentAlgo];
+        resetSimulation();
+    });
 });
+
+// Randomize Requests
+const btnRandomize = document.getElementById('btn-randomize');
+if (btnRandomize) {
+    btnRandomize.addEventListener('click', () => {
+        let count = Math.floor(Math.random() * 5) + 5;
+        let randomReqs = [];
+        for (let i = 0; i < count; i++) {
+            randomReqs.push(Math.floor(Math.random() * 200));
+        }
+        reqInput.value = randomReqs.join(', ');
+        headInput.value = Math.floor(Math.random() * 200);
+        resetSimulation();
+    });
+}
+
+// Controls
+const btnPlay = document.getElementById('btn-play');
+const btnPause = document.getElementById('btn-pause');
+const btnNext = document.getElementById('btn-next');
+const btnReset = document.getElementById('btn-reset');
+
+function initSimulation() {
+    const head = parseInt(headInput.value, 10);
+    const reqs = parseRequests(reqInput.value);
+    if (isNaN(head) || reqs.length === 0) return false;
+
+    // Calculate full path
+    const { path } = calculateMovementAndPath(head, reqs, currentAlgo);
+    simPath = path;
+    simStep = 0;
+
+    // Reset visuals
+    statCurrent.textContent = head;
+    statTotal.textContent = "0";
+    orderDisplay.textContent = head.toString();
+    drawGraphAnimatedLab('lab-canvas', simPath.slice(0, 1));
+    update3DArm(head);
+    return true;
+}
+
+function resetSimulation() {
+    pauseSimulation();
+    initSimulation();
+    btnNext.disabled = false;
+    btnPlay.disabled = false;
+    btnPlay.style.opacity = '1';
+}
+
+function pauseSimulation() {
+    if (simInterval) clearInterval(simInterval);
+    simInterval = null;
+    btnPlay.disabled = false;
+    btnPause.disabled = true;
+    btnPlay.style.opacity = '1';
+    btnPause.style.opacity = '0.5';
+}
+
+function playSimulation() {
+    if (simStep === 0 && simPath.length === 0) {
+        if (!initSimulation()) return;
+    }
+
+    if (simStep >= simPath.length - 1) return;
+
+    btnPlay.disabled = true;
+    btnPause.disabled = false;
+    btnPlay.style.opacity = '0.5';
+    btnPause.style.opacity = '1';
+
+    simInterval = setInterval(() => {
+        stepSimulation();
+        if (simStep >= simPath.length - 1) pauseSimulation();
+    }, animationSpeed);
+}
+
+function stepSimulation() {
+    if (simStep >= simPath.length - 1) return;
+    simStep++;
+
+    let partialPath = simPath.slice(0, simStep + 1);
+
+    // Live update stats
+    let currentHead = partialPath[simStep];
+    statCurrent.textContent = currentHead;
+
+    let movement = 0;
+    for (let i = 1; i <= simStep; i++) {
+        movement += Math.abs(partialPath[i] - partialPath[i - 1]);
+    }
+    statTotal.textContent = movement;
+
+    // Live update history
+    orderDisplay.textContent = partialPath.join(' \u2192 ');
+
+    // Draw
+    drawGraphAnimatedLab('lab-canvas', partialPath);
+    update3DArm(currentHead);
+
+    if (simStep >= simPath.length - 1) {
+        btnNext.disabled = true;
+        btnPlay.disabled = true;
+        btnPlay.style.opacity = '0.5';
+    }
+}
+
+// 3D Arm Sync
+function update3DArm(track) {
+    if (!arm3d) return;
+    let maxTrack = 199;
+    let minAngle = 30; // degrees for track 0 (outer edge)
+    let maxAngle = -5; // degrees for track 199 (inner spindle)
+    let angle = minAngle - (track / maxTrack) * (minAngle - maxAngle);
+    arm3d.style.transform = `translateY(-50%) translateZ(15px) rotate(${angle}deg)`;
+}
+
+btnPlay.addEventListener('click', playSimulation);
+btnPause.addEventListener('click', pauseSimulation);
+btnNext.addEventListener('click', () => {
+    pauseSimulation();
+    if (simPath.length === 0) initSimulation();
+    stepSimulation();
+});
+btnReset.addEventListener('click', resetSimulation);
+
+headInput.addEventListener('change', resetSimulation);
+reqInput.addEventListener('change', resetSimulation);
+
+// ------------- Lab Canvas Drawing Function -------------
+function drawGraphAnimatedLab(canvasId, path, maxTrack = 199) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+    const paddingX = 30;
+    const paddingY = 20;
+    const usableWidth = width - (paddingX * 2);
+    const usableHeight = height - (paddingY * 2);
+
+    ctx.beginPath();
+    ctx.moveTo(paddingX, paddingY);
+    ctx.lineTo(width - paddingX, paddingY);
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    if (path.length === 0) return;
+    const getX = (val) => paddingX + (val / maxTrack) * usableWidth;
+    let totalNodes = Math.max(simPath.length, 2);
+    const stepY = usableHeight / (totalNodes - 1);
+
+    drawNode(ctx, getX(path[0]), paddingY, path[0], true);
+
+    for (let i = 1; i < path.length; i++) {
+        let startX = getX(path[i - 1]);
+        let startY = paddingY + ((i - 1) * stepY);
+        let endX = getX(path[i]);
+        let endY = paddingY + (i * stepY);
+
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.strokeStyle = "#D174D2";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        drawNode(ctx, endX, endY, path[i]);
+    }
+}
+
+// Ensure initial render
+setTimeout(() => {
+    if (document.getElementById('lab-canvas')) {
+        resetSimulation();
+    }
+}, 500);
 
 
 // ------------- Comparison Simulator Setup -------------
